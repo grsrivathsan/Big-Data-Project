@@ -1,0 +1,46 @@
+hive> create table websites (protocol string,code int,site string,link string,ip bigint) row format delimited fields terminated by ' ' ;
+
+hive> load data local inpath '/home/cloudera/websites.txt' into table websites;     
+
+hive> describe websites                                                                 
+    > ;
+OK
+protocol            	string              	                    
+code                	int                 	                    
+site                	string              	                    
+link                	string              	                    
+ip                  	bigint              	                    
+Time taken: 0.155 seconds, Fetched: 5 row(s)
+
+//Websites that are most used
+
+hive> select site,COUNT(site) as count from websites group by site order by count desc limit 5 ; 
+
+www.monsterindia.com	969
+www.hiree.com	489
+www.quintcareers.com	487
+www.fresherjobportal.com	484
+www.naukri.com	477
+Time taken: 91.035 seconds, Fetched: 5 row(s)
+
+//Filter by reliable websites based on http codes
+
+hive> select DISTINCT(site) from websites where code <> 203 AND code <> 204 AND code <> 307 AND code <> 500;
+
+www.careerbuilder.co.in
+www.forbes.com
+www.fresherjobportal.com
+www.freshersopenings.in
+www.freshersworld.com
+www.hiree.com
+www.indeed.co.in
+www.jobsearch.about.com
+www.monsterindia.com
+www.naukri.com
+www.placementindia.com
+www.quintcareers.com
+www.shine.com
+www.timesjobs.com
+
+
+

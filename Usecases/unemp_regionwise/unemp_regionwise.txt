@@ -1,0 +1,53 @@
+REGION WISE RATE OF UNEMPLOYMENT
+
+		DATASET FORMAT : Json
+		   DATASET USED: EmpSurvey,EmpExchange
+		TECHNOLOGY USED: Pig ,Spark,Hive
+
+
+
+PROGRAM:
+ 
+		//For Process json files
+
+		grunt> a = load 'EmpSurvey.json' using JsonLoader('region:bytearray,id:int,empstatus:boolean,currentsector:bytearray,preferredsector:bytearray,
+                           skillsacquired:bytearray,experience:int,country:bytearray,sector:bytearray');
+		grunt> b = filter a by (empstatus == 'false');
+		grunt> store b into '/home/cloudera/unemp';
+
+		//For counting Number of unemployed people region wise
+		
+		scala> val a = sc.textFile("unemp");
+		scala> val b = lines.flatMap(_.split(" ")).map((_,1)).reduceByKey(_+_);
+		scala> b.collect();
+		scala> b.saveAsTextFile("/home/cloudera/project/unemploy");
+
+		//For calculating Percentage of unemployed people in each region
+
+		grunt> a = load 'EmpExchange.csv' using PigStorage(',');
+		grunt> b = foreach a generate $6 as region;
+		grunt> c = group b by region;
+		grunt> d = foreach c generate group,COUNT(b);
+		grunt> store d into 'home/cloudera/region';
+
+
+
+		hive> create table unemp(a1 string,a2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/unemploy' into table unemp;
+		
+
+		hive> create table total(b1 string,b2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/region' into table total;
+		
+		hive> create table unemployment as select unemp.a1,unemp.a2,total.b2 from unemp join total on ( unemp.a1 = total.b1);
+		hive> select ((unemployment.a2/unemployment.b2)*100) from unemployment;

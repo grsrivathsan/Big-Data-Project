@@ -1,0 +1,9 @@
+a = load 'psect' using PigStorage (',') as (sector:chararray,need:long);
+b = load 'skillreq' using PigStorage (',') as (sector:chararray,vacant:long);
+c = order a by $0;  
+d = order b by $0;   
+e = JOIN c by $0 LEFT OUTER,d by $0;  
+f = foreach e generate $0,$1,$3;   
+g = filter f by $2 is not null;  
+h = foreach g generate $0,$1-$2;    
+i = order h by $1 desc; 

@@ -1,0 +1,5 @@
+val emps=sc.textFile("/home/cloudera/project/empsurveyfull")
+val splits=emps.map(_.split(","))
+val tuples=splits.map(temp=>(temp(3).toString())
+val counts=tuples.flatMap(line=>line.split("\n")).map(word=>(word,1)).reduceByKey(_+_,1).map(item=>item.swap).sortByKey(false,1).map(item=>item.swap)
+counts.saveAsTextFile("/home/cloudera/project/result1")

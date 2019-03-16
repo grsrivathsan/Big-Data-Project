@@ -1,0 +1,14 @@
+ hive> load data local inpath '/home/cloudera/project/temp/empexchange.csv' into table empexchange;
+
+hive> load data local inpath '/home/cloudera/project/temp/empsurvey.csv' into table empsurvey; 
+
+hive> insert overwrite directory '/home/cloudera/project/join' select e.id,e.tenth,e.twelthf,e.coursef,e.age,e.gender,e.region,e.moi,s.empstatus,s.csect,s.psect,s.skill,s.exp,s.ai,s.country from empexchange e JOIN empsurvey s where e.id=s.id;
+insert overwrite local directory '/home/cloudera/project/join' row format delimited fields terminated by ',' select e.id,tenth,twelthf,coursef,age,gender,region,moi,empstatus,csect,psect,skill,exp,ai,country from empexchange e JOIN empsurvey s on e.id=s.id;
+
+hive> insert overselect empsur.id,empsur.empstatus,empsur.csect,empsur.psect,empsur.skill,empsur.exp,empsur.ai,empsur.country,empsur.income.write directory '/home/cloudera/project/join' select * from empexchange e JOIN empsurvey s where e.id=s.id;
+
+
+
+select e.id,e.tenth,e.twelthf,e.coursef,e.age,e.gender,e.region,e.moi,s.empstatus,s.csect,s.psect,s.skill,s.exp,s.ai,s.country,s.income from empexchange e JOIN emps s on e.id=s.id;
+
+ insert overwrite local directory '/home/cloudera/project/join' row format delimited fields terminated by ',' select e.id,e.tenth,e.twelthf,e.coursef,e.age,e.gender,e.region,e.moi,s.empstatus,s.csect,s.psect,s.skill,s.exp,s.ai,s.country,s.income from empexchange e JOIN emps s on e.id=s.id;

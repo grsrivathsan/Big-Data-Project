@@ -1,0 +1,41 @@
+REGION WISE RATE OF OVERALL LITERACY
+
+		DATASET FORMAT : csv
+		   DATASET USED: Population and EmpExchange
+		TECHNOLOGY USED: Pig and Hive
+
+PROGRAM:
+
+		// For extracting required columns from datasets
+
+		grunt> a = load 'population.csv' using PigStorage(',');
+		grunt> b = load 'EmpExchange.csv' using PigStorage(',');
+		grunt> c = foreach a generate $0 as popregion , $3 as total;
+		grunt> store c into '/home/cloudera/popregion';
+		grunt> d = foreach b generate $6 as litregion;
+		grunt> e = group d by litregion;
+		grunt> f = foreach e generate group,COUNT(d);
+		grunt> store f into '/home/cloudera/litregion'; 
+
+
+		// For calculating the literacy rate in each region
+
+		hive> create table pop(a1 string,a2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/popregion' into table pop;
+		
+
+		hive> create table lit(b1 string,b2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/litregion' into table lit;
+		
+		hive> create table literacy as select pop.a1,pop.a2,lit.b2 from pop join lit on ( pop.a1 = lit.b1);
+		hive> select ((literacy.b2/literacy.a2)*100) from literacy;

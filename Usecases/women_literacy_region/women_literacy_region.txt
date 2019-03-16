@@ -1,0 +1,35 @@
+
+// For extracting required columns from datasets
+
+		grunt> a = load 'population.csv' using PigStorage(',');
+		grunt> b = load 'EmpExchange.csv' using PigStorage(',');
+		grunt> b1 = filter b by ($5 == 'F');
+		grunt> c = foreach a generate $0 as womenregion , $2 as total;
+		grunt> store c into '/home/cloudera/womenpop';
+		grunt> d = foreach b1 generate $6 as womenregion;
+		grunt> e = group d by womenregion;
+		grunt> f = foreach e generate group,COUNT(d);
+		grunt> store f into '/home/cloudera/womenregion'; 
+
+
+		// For calculating the women literacy rate in each region
+
+		hive> create table womenpop(a1 string,a2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/womenpop' into table womenpop;
+		
+
+		hive> create table womenlit(b1 string,b2 int)
+		>> row format delimited
+		>> fields terminated by ','
+		>> lines terminated by '\n';
+		
+		
+		hive> load data local inpath '/home/cloudera/womenregion' into table womenlit;
+		
+		hive> create table womenliteracy as select womenpop.a1,womenpop.a2,lit.b2 from womenpop join womenlit on ( womenpop.a1 = womenlit.b1);
+		hive> select ((womenliteracy.b2/womenliteracy.a2)*100) from womenliteracy;

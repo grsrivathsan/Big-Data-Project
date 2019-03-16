@@ -1,0 +1,61 @@
+hive> load data local inpath '/home/cloudera/project/sample/company.csv' into table company; 
+hive> select sectorskill,':',vacancy from company;     
+hive> insert overwrite local directory '/home/cloudera/project/skillvacant' row format delimited fields terminated by ':' select sectorskill,':',vacancy from company;
+
+grunt> a = load 'skillvacant' using PigStorage(':');
+grunt> b = foreach a generate $1,$2;
+grunt> c = group b by $0;
+grunt> d = foreach c generate group,COUNT(b);
+grunt> dump d;
+grunt> e = order c by $1 desc;
+
+Output:
+
+(INFORMATION TECHNOLOGY,53833)
+(AUTOMOTIVES,29100)
+(CEMENT AND CONSTRUCTION,28694)
+(TELECOMMUNICATION,24845)
+(PHARMACEUTICALS,24729)
+(MANUFACTURING,22152)
+(BANKING FINANCIAL SERVICE,16562)
+(AGRICULTURE,14634)
+(SERVICES,10249)
+(MEDIA AND ENTERTAINMENT,8387)
+(CHEMICAL,8323)
+(POWER AND ENERGY,6232)
+(MANUFACTURING ,4641)
+(RETAIL AND REAL ESTATE,4235)
+(ENGINEERING AND CAPITAL GOODS,4127)
+(TEACHING,2066)
+(CONSUMER DURABLE,2057)
+
+hive> select psect,COUNT(psect) from empsur1 group by psect;    
+hive> insert overwrite local directory '/home/cloudera/project/psect' row format delimited fields terminated by ',' select psect,COUNT(psect) from empsur1 group by psect;  
+
+grunt> a = load 'psect' using PigStorage (',') as (sector:chararray,need:long);
+grunt> b = load 'skillreq' using PigStorage (',') as (sector:chararray,vacant:long);
+grunt> c = order a by $0;  
+grunt> d = order b by $0;   
+grunt> e = JOIN c by $0 LEFT OUTER,d by $0;  
+grunt> f = foreach e generate $0,$1,$3;   
+grunt> g = filter f by $2 is not null;  
+grunt> h = foreach g generate $0,$1-$2;    
+grunt> i = order h by $1 desc; 
+
+Output://predicting the job oppourtunity in each sector by subtracting need from empsurvey and vacant from company
+	// Suggestion to the government;
+(ENGINEERING AND CAPITAL GOODS,64373)
+(CHEMICAL,58677)
+(TEACHING,57934)
+(MEDIA AND ENTERTAINMENT,57113)
+(AGRICULTURE,56366)
+(SERVICES,54751)
+(POWER AND ENERGY,54268)
+(AUTOMOTIVES,46900)
+(RETAIL AND REAL ESTATE,45265)
+(PHARMACEUTICALS,41771)
+(MANUFACTURING,41348)
+(BANKING FINANCIAL SERVICE,40938)
+(CEMENT AND CONSTRUCTION,35306)
+(TELECOMMUNICATION,32655)
+(INFORMATION TECHNOLOGY,19667)
